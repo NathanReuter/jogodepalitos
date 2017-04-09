@@ -1,0 +1,20 @@
+{
+  "name": "porrinha",
+  "version": "0.0.1",
+  "description": "Jogo Porrinha para trabalho 1 de IA",
+  "main": "src/app.js",
+  "scripts": {
+    "build": "browserify src/app.js -o build/game.js && echo 'Builded' ",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "IA",
+    "UFSC",
+    "GAME"
+  ],
+  "author": "Nathan Reuter Godinho, Matheus Demetrio",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^4.17.4"
+  }
+}
