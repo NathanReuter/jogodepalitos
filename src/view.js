@@ -28,7 +28,8 @@
         var playerViewTemplate =
                 '<div class="col-sm-{{nPlayer}} player-view" style="background: {{color}}">' +
                     '<h4>Jogador: {{id}}</h4>' +
-                    '<h3>Palitos: {{sticks}}</h3>' +
+                    '<h3>Na Mão: {{inHandSticks}}</h3>' +
+                    '<h3>Total: {{totalSticks}}</h3>' +
                 '</div>';
 
         playerViewTemplate = playerViewTemplate
@@ -38,12 +39,20 @@
 
         _.forEach(players, function (player) {
             var playerView = playerViewTemplate
-                .replace('{{id}}', player.id)
-                .replace('{{sticks}}', player.sticks)
+                .replace('{{id}}', player.id + 1)
+                .replace('{{inHandSticks}}', player.inHandSticks)
+                .replace('{{totalSticks}}', player.totalSticks)
                 .replace('{{color}}', config.playersColors[player.id]);
 
             gameView.firstChild.innerHTML += playerView;
         });
+
+        gameView.firstChild.innerHTML +=
+            '<div class="row"> ' +
+                '<div class="col-sm-12" style="margin-top: 20px;"> '+
+                    '<button class="btn btn-primary bt-lg">Próxima Rodada</button>' +
+                '</div>' +
+            '</div>';
     };
 
     var View = function () {
