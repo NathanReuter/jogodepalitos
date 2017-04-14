@@ -29,7 +29,7 @@
 
     var checkWinCondition = function (player) {
         if (!player.totalSticks) {
-            alert('Jogador ' + player.id + ' Venceu!');
+            alert('Jogador ' + (player.id + 1)  + ' Venceu!');
         }
     };
 
@@ -64,19 +64,17 @@
                 player.decreaseStick();
                 checkWinCondition(player);
               }
-              console.log(playerbet);
+
+              player.chooseNewsSticks();
           })
         };
 
         checkPlayersBet(players);
     };
 
-    var Game = function () {
-        this.players = [];
-    };
+    var Game = function () {};
 
     Game.prototype.init = function (nOfPlayers) {
-        console.log('this', this);
         var players = createPlayers(checkNumberOfPlayer(nOfPlayers));
 
         nextRound(players);
@@ -85,5 +83,6 @@
     };
 
     Game.prototype.nextRound = nextRound;
+
     module.exports  = Game;
 })();

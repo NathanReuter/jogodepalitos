@@ -32,6 +32,13 @@
                     '<h3>Total: {{totalSticks}}</h3>' +
                 '</div>';
 
+        var nextRoundButtonTemplate =
+            '<div class="row"> ' +
+                '<div class="col-sm-12" style="margin-top: 20px;"> '+
+                    '<button class="btn btn-primary bt-lg" id="next-round-button">Próxima Rodada</button>' +
+                '</div>' +
+            '</div>';
+
         playerViewTemplate = playerViewTemplate
                 .replace('{{nPlayer}}', Math.floor(12 / players.length));
 
@@ -47,12 +54,12 @@
             gameView.firstChild.innerHTML += playerView;
         });
 
-        gameView.firstChild.innerHTML +=
-            '<div class="row"> ' +
-                '<div class="col-sm-12" style="margin-top: 20px;"> '+
-                    '<button class="btn btn-primary bt-lg">Próxima Rodada</button>' +
-                '</div>' +
-            '</div>';
+        gameView.firstChild.innerHTML += nextRoundButtonTemplate;
+
+        document.getElementById('next-round-button').onclick = function () {
+            window.game.nextRound(players);
+            createPlayersView(players, gameView);
+        };
     };
 
     var View = function () {

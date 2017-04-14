@@ -7,7 +7,7 @@
     var config = require('./config');
 
     var getPlayerSticks = function (maxSticks) {
-        return Math.floor(Math.random() * maxSticks);
+        return Math.ceil(Math.random() * maxSticks);
     };
 
     var Player = function (id) {
