@@ -17164,7 +17164,8 @@
     };
 
     var nextRound = function (players) {
-        var totalInGameSticks = function () {
+        /* Sum of all sticks in game*/
+        var amountOfSticksInGame = function () {
             return _(players)
                 .map(function (player) {
                     return player.totalSticks;
@@ -17173,6 +17174,8 @@
                 });
         }();
 
+        /* Sum of all sticks in hand in this round,
+        * the players must guess this number */
         var totalInHandSticks = function () {
             return _(players)
                 .map(function (player) {
@@ -17186,25 +17189,45 @@
             return playerBet === totalInHandSticks;
         };
 
+        /* Begin the round with the winning player and for every player
+        * colectes its bets, at the end check if anyOf them had win.*/
         var checkPlayersBet = function (players) {
-          _.each(players, function (player) {
-              var playerbet = player.bet(totalInGameSticks);
+            var playersBets = [];
 
-              if (isCorrectBet(playerbet, totalInHandSticks)) {
-                player.decreaseStick();
-                checkWinCondition(player);
-              }
+            var getBetOfThePlayers = function (playersBets) {
+                players = _(players)
+                    .sortBy('hadWin')
+                    .reverse()
+                    .forEach(function (player) {
+                        var playerbet = player.bet(amountOfSticksInGame, players, playersBets);
 
-              player.chooseNewsSticks();
-          })
+                        playersBets.push(playerbet);
+                        player.clearWin();
+                    });
+            },
+
+            checkForWinners = function (playersBets, players) {
+                _.forEach(playersBets, function (playerBet, index) {
+                    var player = players[index];
+
+                    if (isCorrectBet(playerBet, totalInHandSticks)) {
+                        player.decreaseStick();
+                        player.setWin();
+                        checkWinCondition(player);
+                    }
+
+                    player.chooseNewsSticks();
+                });
+            };
+
+            getBetOfThePlayers(playersBets);
+            checkForWinners(playersBets, players);
         };
 
         checkPlayersBet(players);
     };
 
-    var Game = function () {
-        this.players = [];
-    };
+    var Game = function () {};
 
     Game.prototype.init = function (nOfPlayers) {
         var players = createPlayers(checkNumberOfPlayer(nOfPlayers));
@@ -17215,6 +17238,7 @@
     };
 
     Game.prototype.nextRound = nextRound;
+
     module.exports  = Game;
 })();
 },{"./config":3,"./player":5,"lodash":1}],5:[function(require,module,exports){
@@ -17224,16 +17248,22 @@
 (function () {
     "use strict";
 
-    var config = require('./config');
+    var config = require('./config'),
+        _ = require('lodash');
 
     var getPlayerSticks = function (maxSticks) {
         return Math.ceil(Math.random() * maxSticks);
+    };
+
+    var findBestBet = function (players) {
+
     };
 
     var Player = function (id) {
         this.id = id;
         this.totalSticks = config.gameSettings.playersMaxSticks;
         this.inHandSticks = getPlayerSticks(this.totalSticks);
+        this.hadWin = false;
     };
 
     Player.prototype.chooseNewsSticks = function () {
@@ -17244,13 +17274,24 @@
         this.totalSticks--;
     };
 
-    Player.prototype.bet = function (totalSticksInGame) {
+    Player.prototype.setWin = function () {
+        this.hadWin = true;
+    };
+
+    Player.prototype.clearWin = function () {
+        this.hadWin = false;
+    };
+
+    Player.prototype.bet = function (totalSticksInGame, players, playersBets) {
+        // findBestBet(players);
+        console.log(playersBets);
+
         return getPlayerSticks(totalSticksInGame);
     };
 
     module.exports = Player;
 })();
-},{"./config":3}],6:[function(require,module,exports){
+},{"./config":3,"lodash":1}],6:[function(require,module,exports){
 /**
  * Created by nathangodinho on 08/04/17.
  */
@@ -17279,7 +17320,7 @@
 
     var createPlayersView = function (players, gameView) {
         var playerViewTemplate =
-                '<div class="col-sm-{{nPlayer}} player-view" style="background: {{color}}">' +
+                '<div class="col-sm-{{nPlayer}} player-view {{roundWin}}" style="background: {{color}}">' +
                     '<h4>Jogador: {{id}}</h4>' +
                     '<h3>Na Mão: {{inHandSticks}}</h3>' +
                     '<h3>Total: {{totalSticks}}</h3>' +
@@ -17302,6 +17343,7 @@
                 .replace('{{id}}', player.id + 1)
                 .replace('{{inHandSticks}}', player.inHandSticks)
                 .replace('{{totalSticks}}', player.totalSticks)
+                .replace('{{roundWin}}', player.hadWin ? 'round-win' : '')
                 .replace('{{color}}', config.playersColors[player.id]);
 
             gameView.firstChild.innerHTML += playerView;

@@ -26,7 +26,7 @@
 
     var createPlayersView = function (players, gameView) {
         var playerViewTemplate =
-                '<div class="col-sm-{{nPlayer}} player-view" style="background: {{color}}">' +
+                '<div class="col-sm-{{nPlayer}} player-view {{roundWin}}" style="background: {{color}}">' +
                     '<h4>Jogador: {{id}}</h4>' +
                     '<h3>Na Mão: {{inHandSticks}}</h3>' +
                     '<h3>Total: {{totalSticks}}</h3>' +
@@ -49,6 +49,7 @@
                 .replace('{{id}}', player.id + 1)
                 .replace('{{inHandSticks}}', player.inHandSticks)
                 .replace('{{totalSticks}}', player.totalSticks)
+                .replace('{{roundWin}}', player.hadWin ? 'round-win' : '')
                 .replace('{{color}}', config.playersColors[player.id]);
 
             gameView.firstChild.innerHTML += playerView;

@@ -6,7 +6,7 @@
   "scripts": {
     "start": "open index.html",
     "build": "browserify src/app.js -o build/game.js && echo 'Builded' ",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "deploy": "browserify src/app.js | node  ./node_modules/uglify-js/bin/uglifyjs > build/game.js && echo 'Deployed'"
   },
   "keywords": [
     "IA",
@@ -17,5 +17,8 @@
   "license": "ISC",
   "dependencies": {
     "lodash": "^4.17.4"
+  },
+  "devDependencies": {
+    "uglify-js": "^2.8.22"
   }
 }

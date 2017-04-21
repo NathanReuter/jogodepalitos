@@ -34,7 +34,8 @@
     };
 
     var nextRound = function (players) {
-        var totalInGameSticks = function () {
+        /* Sum of all sticks in game*/
+        var amountOfSticksInGame = function () {
             return _(players)
                 .map(function (player) {
                     return player.totalSticks;
@@ -43,6 +44,8 @@
                 });
         }();
 
+        /* Sum of all sticks in hand in this round,
+        * the players must guess this number */
         var totalInHandSticks = function () {
             return _(players)
                 .map(function (player) {
@@ -56,17 +59,39 @@
             return playerBet === totalInHandSticks;
         };
 
+        /* Begin the round with the winning player and for every player
+        * colectes its bets, at the end check if anyOf them had win.*/
         var checkPlayersBet = function (players) {
-          _.each(players, function (player) {
-              var playerbet = player.bet(totalInGameSticks);
+            var playersBets = [];
 
-              if (isCorrectBet(playerbet, totalInHandSticks)) {
-                player.decreaseStick();
-                checkWinCondition(player);
-              }
+            var getBetOfThePlayers = function (playersBets) {
+                players = _(players)
+                    .sortBy('hadWin')
+                    .reverse()
+                    .forEach(function (player) {
+                        var playerbet = player.bet(amountOfSticksInGame, players, playersBets);
 
-              player.chooseNewsSticks();
-          })
+                        playersBets.push(playerbet);
+                        player.clearWin();
+                    });
+            },
+
+            checkForWinners = function (playersBets, players) {
+                _.forEach(playersBets, function (playerBet, index) {
+                    var player = players[index];
+
+                    if (isCorrectBet(playerBet, totalInHandSticks)) {
+                        player.decreaseStick();
+                        player.setWin();
+                        checkWinCondition(player);
+                    }
+
+                    player.chooseNewsSticks();
+                });
+            };
+
+            getBetOfThePlayers(playersBets);
+            checkForWinners(playersBets, players);
         };
 
         checkPlayersBet(players);
