@@ -29,6 +29,7 @@
 
     var checkWinCondition = function (player) {
         if (!player.totalSticks) {
+            window.game.winner = player.id + 1;
             alert('Jogador ' + (player.id + 1)  + ' Venceu!');
         }
     };

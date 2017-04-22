@@ -8,7 +8,17 @@
         _ = require('lodash');
 
     var getPlayerSticks = function (maxSticks) {
-        return Math.ceil(Math.random() * maxSticks);
+        var chooseTrim = function (cb) {
+            if (Math.random() > 0.5) {
+                return Math.ceil(cb())
+            }
+
+            return Math.floor(cb());
+        };
+
+        return chooseTrim(function () {
+            return Math.random() * maxSticks;
+        });
     };
 
     var findBestBet = function (players, playersBets, totalInGameSticks) {
@@ -73,7 +83,7 @@
             }
 
             var guess = ((((totalInGameSticks - diference) - player.totalSticks) / players.length) / 2 )
-                    * players.length + player.totalSticks;
+                * players.length + player.inHandSticks;
 
             return guess * 10 - (Math.abs(nodo.bet - guess));
 
@@ -89,9 +99,6 @@
         var actualNodeGrade = calculateGuess(actualNode);
         var nextNodeGrade = calculateGuess(nextNode);
 
-        console.log('actualNodeGrade', actualNodeGrade);
-        console.log('nextNodeGrade', nextNodeGrade);
-
         while(actualNodeGrade < nextNodeGrade){
             actualNode = nextNode;
             actualNodeGrade = nextNodeGrade;
@@ -100,7 +107,6 @@
             nextNodeGrade = calculateGuess(nextNode);
         }
 
-        console.log('Final Grade', actualNode.bet);
         return actualNode.bet;
     };
 

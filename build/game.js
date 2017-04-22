@@ -17159,6 +17159,7 @@
 
     var checkWinCondition = function (player) {
         if (!player.totalSticks) {
+            window.game.winner = player.id + 1;
             alert('Jogador ' + (player.id + 1)  + ' Venceu!');
         }
     };
@@ -17252,7 +17253,17 @@
         _ = require('lodash');
 
     var getPlayerSticks = function (maxSticks) {
-        return Math.ceil(Math.random() * maxSticks);
+        var chooseTrim = function (cb) {
+            if (Math.random() > 0.5) {
+                return Math.ceil(cb())
+            }
+
+            return Math.floor(cb());
+        };
+
+        return chooseTrim(function () {
+            return Math.random() * maxSticks;
+        });
     };
 
     var findBestBet = function (players, playersBets, totalInGameSticks) {
@@ -17316,10 +17327,8 @@
                 return 0;
             }
 
-            debugger;
-
             var guess = ((((totalInGameSticks - diference) - player.totalSticks) / players.length) / 2 )
-                    * players.length + player.totalSticks;
+                * players.length + player.inHandSticks;
 
             return guess * 10 - (Math.abs(nodo.bet - guess));
 
@@ -17335,9 +17344,6 @@
         var actualNodeGrade = calculateGuess(actualNode);
         var nextNodeGrade = calculateGuess(nextNode);
 
-        console.log('actualNodeGrade', actualNodeGrade);
-        console.log('nextNodeGrade', nextNodeGrade);
-
         while(actualNodeGrade < nextNodeGrade){
             actualNode = nextNode;
             actualNodeGrade = nextNodeGrade;
@@ -17346,7 +17352,6 @@
             nextNodeGrade = calculateGuess(nextNode);
         }
 
-        console.log('Final Grade', actualNode.bet);
         return actualNode.bet;
     };
 
@@ -17400,6 +17405,19 @@
         return beginForm;
     };
 
+    var showBeginForm = function () {
+        var beginForm = document.getElementById('begin-form');
+
+        beginForm.style.display = 'block';
+
+        return beginForm;
+    };
+
+    var hideGameView = function () {
+        document.getElementById('game-view')
+            .innerHTML = '';
+    };
+
     var showGameView = function () {
         var gameView = document.getElementById('game-view');
 
@@ -17409,8 +17427,13 @@
     };
 
     var createPlayersView = function (players, gameView) {
+        if (window.game.winner) {
+            return endGameView(window.game.winner);
+        }
+
+        var winPlayers = [];
         var playerViewTemplate =
-                '<div class="col-sm-{{nPlayer}} player-view {{roundWin}}" style="background: {{color}}">' +
+                '<div class="col-sm-{{nPlayer}} player-view" id="player-{{id}}" style="background: {{color}}">' +
                     '<h4>Jogador: {{id}}</h4>' +
                     '<h3>Na Mão: {{inHandSticks}}</h3>' +
                     '<h3>Total: {{totalSticks}}</h3>' +
@@ -17429,11 +17452,14 @@
         gameView.innerHTML = '<div class="row"></div>';
 
         _.forEach(players, function (player) {
+            if (player.hadWin) {
+                winPlayers.push(player.id + 1);
+            }
+
             var playerView = playerViewTemplate
-                .replace('{{id}}', player.id + 1)
+                .replace(/{{id}}/g, player.id + 1)
                 .replace('{{inHandSticks}}', player.inHandSticks)
                 .replace('{{totalSticks}}', player.totalSticks)
-                .replace('{{roundWin}}', player.hadWin ? 'round-win' : '')
                 .replace('{{color}}', config.playersColors[player.id]);
 
             gameView.firstChild.innerHTML += playerView;
@@ -17441,10 +17467,62 @@
 
         gameView.firstChild.innerHTML += nextRoundButtonTemplate;
 
+        setTimeout(function () {
+            _.forEach(winPlayers, function (id) {
+                var el = document.getElementById('player-'.concat(id));
+
+                el.className += ' round-win' ;
+            });
+
+        }, 100);
+
         document.getElementById('next-round-button').onclick = function () {
             window.game.nextRound(players);
             createPlayersView(players, gameView);
         };
+    };
+
+    var endGameView = function (winnerId) {
+        var gameView = document.getElementById('game-view'),
+            nextRoundButton = document.getElementById('next-round-button'),
+            starContainer = document.createElement('div'),
+            star = document.createElement('img'),
+            replayButton = document.createElement('button');
+
+        var setUpStar = function () {
+            starContainer.className = 'highlight-star-container';
+            star.src = 'https://upload.wikimedia.org/wikipedia/commons/a/a0/Gold_Star.png';
+            star.className = 'highlight-star';
+            starContainer.appendChild(star);
+        };
+
+        var setupReplayButton = function () {
+            replayButton.className = 'btn btn-warning btn-lg';
+            replayButton.textContent = 'Jogar Novamente';
+
+            replayButton.onclick = function () {
+                window.game.winner = undefined;
+                hideGameView();
+                showBeginForm();
+            };
+        };
+
+        var addReplayButton = function () {
+            nextRoundButton.parentNode.removeChild(nextRoundButton);
+            gameView.appendChild(replayButton);
+        };
+
+        var highlightWinner = function () {
+            document.getElementById('player-'.concat(winnerId))
+                .appendChild(starContainer);
+        };
+
+        setupReplayButton();
+        addReplayButton();
+        setUpStar();
+        setTimeout(function () {
+            highlightWinner();
+        });
     };
 
     var View = function () {
@@ -17454,7 +17532,9 @@
                 .thru(showGameView)
                 .thru(_.bind(createPlayersView, null, players))
                 .value();
-        }
+        };
+
+        this.endGameView = endGameView;
     };
 
     module.exports = View;
