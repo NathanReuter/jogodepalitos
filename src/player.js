@@ -72,8 +72,6 @@
                 return 0;
             }
 
-            debugger;
-
             var guess = ((((totalInGameSticks - diference) - player.totalSticks) / players.length) / 2 )
                     * players.length + player.totalSticks;
 
