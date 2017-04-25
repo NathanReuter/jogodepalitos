@@ -1,6 +1,6 @@
 {
   "name": "porrinha",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Jogo Porrinha para trabalho 1 de IA",
   "main": "src/app.js",
   "scripts": {
